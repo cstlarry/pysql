@@ -18,14 +18,15 @@ def calculate_age(dob):
 
 start_date = '2018-01-01'
 end_date = '2020-08-07'
+school_start = '2019-08-27'
 
 sql = f"""
 SELECT
 	e.learnerDBNum as cmsID,
     p.lastName,
-    p.firstName,
-    p.birthDate,
-    e.startDate as enrollStart
+    p.firstName
+--    p.birthDate,
+--    e.startDate as enrollStart
 FROM
     lcenroll e
 JOIN person p ON p.personDBNum = e.learnerDBNum
@@ -34,7 +35,8 @@ WHERE
     AND e.officeDBNum = 10
     AND e.lcenrollGroupDBNum = 32
     AND e.lcenrollstatus = 'A'
-    -- AND NOT EXISTS (SELECT lcenrollDBNum FROM lcenrolloutcome WHERE lcenrollDBNum = e.lcenrollDBNum)
+    AND e.dropdate < '{school_start}'
+    AND NOT EXISTS (SELECT lcenrollDBNum FROM lcenrolloutcome WHERE lcenrollDBNum = e.lcenrollDBNum)
 ORDER BY
 	p.lastname, p.firstname
 """
@@ -48,7 +50,7 @@ print(len(rows))
 
 for row in rows:
     print(row)
-    for field in row:
-        print(field)
+    #for field in row:
+     #   print(field)
 
 con.close()
