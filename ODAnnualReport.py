@@ -1,12 +1,19 @@
 import mysql.connector
 from datetime import date
 import os
-from Person import Person
+from enum import Enum
+from Person import *
 
 conn = os.environ["MYCONN"]
 u_name = os.environ['MYU']
 u_pass = os.environ['MYP']
 key = os.environ['MYK']
+
+def enum(*args):
+    enums = dict(zip(args, range(len(args))))
+    return type('Enum', (), enums)
+
+Gender = enum('MALE', 'FEMALE', 'N_A')
 
 # Using readlines() ProgramStartDate,LastName,FirstName,BirthDate,Ssid,DistrictStudentCode
 file1 = open('districtList.csv', 'r')
@@ -18,7 +25,11 @@ students = {}
 for line in Lines:
     #print("Line{}: {}".format(count, line.strip()))
     fields = line.split(",")
-    p = Person(fields[2], fields[1], fields[4], fields[5])
+    last_name = fields[2]
+    first_name = fields[1]
+    ssid = fields[4]
+    did = fields[5]
+    p = Person(first_name, last_name, ssid, did, Gender.MALE)
     students[p.ssid] = p
 
 con = mysql.connector.connect(user=u_name, password=u_pass, host=conn, database='cmsdb')
@@ -84,6 +95,7 @@ for id in idList:
 #print(*idList, sep=",")
 idString = ','.join(idList)
 
+
 sql = f"""
 SELECT distinct
 	e.learnerDBNum as cmsID,
@@ -111,16 +123,21 @@ SELECT
     p.firstName,
     e.startDate as enrollStart,
     c.lcoutcomeCode as outcomeCode,
-    o.outcomeDate
+    o.outcomeDate,
+    r.regionName,
+    ad.city
 FROM 
 	lcenroll e
 JOIN person p ON p.personDBNum = e.learnerDBNum
 JOIN personaddit a ON a.personDBNum = e.learnerDBNum
 JOIN lcenrolloutcome o ON o.lcenrolldbnum = e.lcenrolldbnum
 JOIN lcoutcome c ON c.lcoutcomedbnum = o.lcoutcomedbnum
+JOIN region r ON r.regionID = p.region
+JOIN address ad ON ad.personDBNum = p.personDBNum
 WHERE
 	e.learnerDBNum in ({idString})
     AND o.outcomeDate >= {school_start}
+    AND ad.status = 'A'
     -- AND o.outcomeDate < {end_date}
     -- AND o.outcomeDate BETWEEN {school_start} AND {end_date}
 ORDER BY
@@ -135,4 +152,16 @@ for row in rows:
     print(*row, sep=", ")
 
 print(len(rows))
+
+sql_delete = f"""
+SELECT lcenrollgroupdbnum FROM lcenroll WHERE learnerDBNum IN ({idString})
+-- UPDATE lcenroll SET lcenrollgroupdbnum = 0 WHERE learnerDBNum IN ({idString})
+"""
+cur.execute(sql_delete)
+
+rows = cur.fetchall()
+for row in rows:
+    print(*row, sep=", ")
+con.commit()
+
 con.close()
