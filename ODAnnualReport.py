@@ -29,7 +29,7 @@ for line in Lines:
     first_name = fields[1]
     ssid = fields[4]
     did = fields[5]
-    p = Person(first_name, last_name, ssid, did, Gender.MALE)
+    p = Person(first_name, last_name, ssid, did, Gender.MALE, datetime.date(1950,5,12))
     students[p.ssid] = p
 
 con = mysql.connector.connect(user=u_name, password=u_pass, host=conn, database='cmsdb')
@@ -37,9 +37,6 @@ con = mysql.connector.connect(user=u_name, password=u_pass, host=conn, database=
 cur = con.cursor(prepared=True)
 
 today = date.today()
-
-def calculate_age(dob):
-    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
 start_date = '2018-01-01'
 end_date = '2020-08-07'
