@@ -1,5 +1,7 @@
 import mysql.connector
 from datetime import date
+from collections import namedtuple
+import csv
 import os
 from enum import Enum
 from Person import *
@@ -14,23 +16,30 @@ def enum(*args):
     return type('Enum', (), enums)
 
 Gender = enum('MALE', 'FEMALE', 'N_A')
-
-# Using readlines() ProgramStartDate,LastName,FirstName,BirthDate,Ssid,DistrictStudentCode
-file1 = open('districtList.csv', 'r')
-Lines = file1.readlines()
-
 count = 0
 students = {}
-# Strips the newline character
-for line in Lines:
-    #print("Line{}: {}".format(count, line.strip()))
-    fields = line.split(",")
-    last_name = fields[2]
-    first_name = fields[1]
-    ssid = fields[4]
-    did = fields[5]
-    p = Person(first_name, last_name, ssid, did, Gender.MALE, datetime.date(1950,5,12))
+
+studentRecord = namedtuple('StudentRecord', ' startDate, lastName, firstName, birthdate, ssID, districtID')
+for s in map(studentRecord._make, csv.reader(open("districtList.csv", "r"))):
+    p = Person(s.firstName, s.lastName, s.ssID, s.districtID, Gender.MALE, datetime.date(1950,5,12))
     students[p.ssid] = p
+
+# Using readlines() ProgramStartDate,LastName,FirstName,BirthDate,Ssid,DistrictStudentCode
+#file1 = open('districtList.csv', 'r')
+# Lines = file1.readlines()
+#
+# count = 0
+# students = {}
+# # Strips the newline character
+# for line in Lines:
+#     #print("Line{}: {}".format(count, line.strip()))
+#     fields = line.split(",")
+#     last_name = fields[2]
+#     first_name = fields[1]
+#     ssid = fields[4]
+#     did = fields[5]
+#     p = Person(first_name, last_name, ssid, did, Gender.MALE, datetime.date(1950,5,12))
+#     students[p.ssid] = p
 
 con = mysql.connector.connect(user=u_name, password=u_pass, host=conn, database='cmsdb')
 
@@ -88,10 +97,8 @@ for id in idList:
         #name = students.get(str(id)).full_name()
         #print(f"{id} {ssid} {name}")
 
-
 #print(*idList, sep=",")
 idString = ','.join(idList)
-
 
 sql = f"""
 SELECT distinct
@@ -150,15 +157,15 @@ for row in rows:
 
 print(len(rows))
 
-sql_delete = f"""
-SELECT lcenrollgroupdbnum FROM lcenroll WHERE learnerDBNum IN ({idString})
--- UPDATE lcenroll SET lcenrollgroupdbnum = 0 WHERE learnerDBNum IN ({idString})
-"""
-cur.execute(sql_delete)
-
-rows = cur.fetchall()
-for row in rows:
-    print(*row, sep=", ")
-con.commit()
+# sql_delete = f"""
+# SELECT lcenrollgroupdbnum FROM lcenroll WHERE learnerDBNum IN ({idString})
+# -- UPDATE lcenroll SET lcenrollgroupdbnum = 0 WHERE learnerDBNum IN ({idString})
+# """
+# cur.execute(sql_delete)
+#
+# rows = cur.fetchall()
+# for row in rows:
+#     print(*row, sep=", ")
+# con.commit()
 
 con.close()

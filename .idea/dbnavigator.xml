@@ -2,7 +2,7 @@
 <project version="4">
   <component name="DBNavigator.Project.DataEditorManager">
     <record-view-column-sorting-type value="BY_INDEX" />
-    <value-preview-text-wrapping value="true" />
+    <value-preview-text-wrapping value="false" />
     <value-preview-pinned value="false" />
   </component>
   <component name="DBNavigator.Project.DataExportManager">
@@ -25,7 +25,7 @@
     <show-object-properties value="true" />
     <loaded-nodes>
       <connection connection-id="1a0e6aa4-a2fb-402d-86be-b420f4b462fa">
-        <schema name="cmsdb" object-types="view, function, table, column, dataset trigger, constraint, procedure, index" />
+        <schema name="cmsdb" object-types="view, table" />
       </connection>
     </loaded-nodes>
   </component>
